@@ -6,72 +6,156 @@ date: last-modified
 lang: es
 ---
 
-```{r}
-#| label: setup
-#| include: false
-source(here::here("R", "analysis.R"))
-cars <- prepare_mtcars()
-```
-
 ## Objetivo
 
-Este notebook reconstruye el ejercicio original de RPubs como una guía breve de la gramática de gráficos. En lugar de depender de `qplot()`, cada visualización define explícitamente los datos, mapeos estéticos, geometrías, escalas y etiquetas.
+Este notebook muestra directamente cada paso analítico. El código prepara los datos, comprueba su estructura y construye cuatro tipos de gráficos con la gramática explícita de `ggplot2`.
 
-El conjunto incorporado `mtcars` contiene `r nrow(cars)` automóviles y `r ncol(cars)` variables preparadas. Como forma parte de R, el ejemplo es reproducible sin descargar datos externos.
-
-## Preparar las variables deliberadamente
-
-Los códigos numéricos de cilindros y transmisión representan categorías. Convertirlos en factores evita escalas continuas incorrectas y produce leyendas comprensibles.
+## Cargar paquetes
 
 ```{r}
-dplyr::glimpse(cars)
+#| label: packages
+#| message: false
+#| warning: false
+library(dplyr)
+library(ggplot2)
+library(tibble)
 ```
 
-## Barras: comparar cantidades por categoría
+## Preparar las variables
 
-Las barras responden preguntas como “¿cuántas observaciones pertenecen a cada grupo?”.
+`mtcars` almacena cilindros, transmisión y marchas como números. En este análisis son categorías, por lo que se convierten en factores antes de graficar.
 
 ```{r}
-#| fig-alt: "Gráfico de barras con la cantidad de automóviles de cuatro, seis y ocho cilindros."
-plot_cylinder_counts(cars, "es")
+#| label: prepare-data
+required_columns <- c("mpg", "cyl", "hp", "wt", "am", "gear")
+missing_columns <- setdiff(required_columns, names(mtcars))
+
+if (length(missing_columns) > 0) {
+  stop("Faltan columnas requeridas: ", paste(missing_columns, collapse = ", "))
+}
+
+cars <- mtcars |>
+  rownames_to_column("model") |>
+  mutate(
+    cylinders = factor(cyl, levels = c(4, 6, 8)),
+    transmission = factor(
+      am,
+      levels = c(0, 1),
+      labels = c("Automática", "Manual")
+    ),
+    gears = factor(gear)
+  )
+
+glimpse(cars)
 ```
 
-## Histograma: examinar una distribución continua
-
-El histograma agrupa una variable numérica en intervalos. El ancho de cada intervalo es una decisión analítica.
+El conjunto preparado contiene `r nrow(cars)` automóviles y `r ncol(cars)` variables.
 
 ```{r}
-#| fig-alt: "Histograma de los caballos de fuerza del conjunto mtcars."
-plot_horsepower_distribution(cars, "es")
+#| label: chart-theme
+chart_theme <- theme_minimal(base_size = 12) +
+  theme(
+    plot.title.position = "plot",
+    plot.title = element_text(face = "bold"),
+    panel.grid.minor = element_blank(),
+    legend.position = "bottom"
+  )
 ```
 
-## Dispersión: examinar dos variables numéricas
+## Barras: comparar frecuencias
 
-La línea ajustada resume la asociación negativa entre peso y eficiencia. No demuestra causalidad.
+Las barras responden cuántas observaciones pertenecen a cada grupo.
 
 ```{r}
-#| fig-alt: "Dispersión entre peso y eficiencia, con color por cilindros y forma por transmisión."
-plot_efficiency_weight(cars, "es")
+#| label: cylinder-bars
+#| fig-alt: "Gráfico de barras con el número de automóviles de cuatro, seis y ocho cilindros."
+ggplot(cars, aes(x = cylinders, fill = cylinders)) +
+  geom_bar(show.legend = FALSE) +
+  scale_fill_viridis_d(end = 0.85) +
+  labs(
+    title = "Automóviles por número de cilindros",
+    x = "Cilindros",
+    y = "Automóviles"
+  ) +
+  chart_theme
 ```
 
-## Cajas: comparar distribuciones entre grupos
+## Histograma: explorar una distribución
 
-Los diagramas de caja resumen mediana, cuartiles y posibles valores atípicos. Los puntos permiten ver la muestra completa.
+El ancho del intervalo controla el nivel de detalle y debe elegirse explícitamente.
 
 ```{r}
-#| fig-alt: "Diagramas de caja de eficiencia para transmisiones automáticas y manuales."
-plot_efficiency_boxplot(cars, "es")
+#| label: horsepower-histogram
+#| fig-alt: "Histograma de los valores de potencia en mtcars."
+ggplot(cars, aes(x = hp)) +
+  geom_histogram(
+    binwidth = 25,
+    boundary = 0,
+    fill = "#2A9D8F",
+    color = "white"
+  ) +
+  labs(
+    title = "Distribución de potencia",
+    x = "Caballos de fuerza",
+    y = "Automóviles"
+  ) +
+  chart_theme
 ```
 
-## Principios de diseño
+## Dispersión: relacionar dos variables numéricas
 
-1. Elegir el gráfico según los tipos de datos y la pregunta.
-2. Convertir categorías en factores antes de visualizar.
-3. Usar escalas accesibles para daltonismo.
-4. Escribir títulos que comuniquen el hallazgo.
-5. Incluir unidades, leyendas legibles y texto alternativo.
+Color y forma ofrecen codificaciones redundantes. La recta resume asociación, no causalidad.
+
+```{r}
+#| label: efficiency-scatter
+#| fig-alt: "Dispersión del peso y la eficiencia, con color por cilindros y forma por transmisión."
+ggplot(
+  cars,
+  aes(
+    x = wt,
+    y = mpg,
+    color = cylinders,
+    shape = transmission
+  )
+) +
+  geom_point(size = 3, alpha = 0.85) +
+  geom_smooth(
+    aes(group = 1),
+    method = "lm",
+    se = TRUE,
+    color = "#333333"
+  ) +
+  scale_color_viridis_d(end = 0.85) +
+  labs(
+    title = "La eficiencia disminuye cuando aumenta el peso",
+    subtitle = "La forma identifica el tipo de transmisión",
+    x = "Peso (miles de libras)",
+    y = "Eficiencia (millas por galón)",
+    color = "Cilindros",
+    shape = "Transmisión"
+  ) +
+  chart_theme
+```
+
+## Cajas: comparar distribuciones
+
+El diagrama resume cada distribución y los puntos desplazados mantienen visible la muestra pequeña.
+
+```{r}
+#| label: efficiency-boxplot
+#| fig-alt: "Diagramas de caja que comparan la eficiencia de transmisiones automáticas y manuales."
+ggplot(cars, aes(x = transmission, y = mpg, fill = transmission)) +
+  geom_boxplot(width = 0.6, show.legend = FALSE) +
+  geom_jitter(width = 0.08, alpha = 0.65) +
+  scale_fill_viridis_d(end = 0.85) +
+  labs(
+    title = "Eficiencia por transmisión",
+    x = "Transmisión",
+    y = "Eficiencia (millas por galón)"
+  ) +
+  chart_theme
+```
 
 ## Conclusión
 
-Los gráficos claros nacen de decisiones analíticas explícitas. Las mismas funciones reutilizables generan la [versión en inglés](../index.qmd), garantizando resultados idénticos.
-
+El flujo visible demuestra decisiones sobre tipos de datos, escalas accesibles, construcción por capas, anotaciones e interpretación. Consulta la [versión en inglés](../index.qmd).

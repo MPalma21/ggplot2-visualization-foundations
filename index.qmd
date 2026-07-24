@@ -6,72 +6,156 @@ date: last-modified
 lang: en
 ---
 
-```{r}
-#| label: setup
-#| include: false
-source(here::here("R", "analysis.R"))
-cars <- prepare_mtcars()
-```
-
 ## Objective
 
-This notebook rebuilds the original RPubs exercise as a concise guide to the grammar of graphics. Instead of relying on `qplot()`, every chart explicitly defines data, aesthetic mappings, geometric marks, scales, and labels.
+This notebook shows every analytical step directly. The code prepares the data, checks its structure, and builds four chart types with the explicit `ggplot2` grammar.
 
-The built-in `mtcars` dataset contains `r nrow(cars)` vehicles and `r ncol(cars)` analysis-ready variables after preparation. Because it ships with R, the example is fully reproducible without downloading external data.
+## Load packages
+
+```{r}
+#| label: packages
+#| message: false
+#| warning: false
+library(dplyr)
+library(ggplot2)
+library(tibble)
+```
 
 ## Prepare variables deliberately
 
-Numeric codes such as cylinder count and transmission are categories in this context. Converting them to factors prevents continuous color scales and makes legends meaningful.
+`mtcars` stores cylinders, transmission, and gears as numbers. They are categories for this analysis, so the code converts them to factors before plotting.
 
 ```{r}
-dplyr::glimpse(cars)
+#| label: prepare-data
+required_columns <- c("mpg", "cyl", "hp", "wt", "am", "gear")
+missing_columns <- setdiff(required_columns, names(mtcars))
+
+if (length(missing_columns) > 0) {
+  stop("Missing required columns: ", paste(missing_columns, collapse = ", "))
+}
+
+cars <- mtcars |>
+  rownames_to_column("model") |>
+  mutate(
+    cylinders = factor(cyl, levels = c(4, 6, 8)),
+    transmission = factor(
+      am,
+      levels = c(0, 1),
+      labels = c("Automatic", "Manual")
+    ),
+    gears = factor(gear)
+  )
+
+glimpse(cars)
+```
+
+The prepared dataset contains `r nrow(cars)` vehicles and `r ncol(cars)` variables.
+
+```{r}
+#| label: chart-theme
+chart_theme <- theme_minimal(base_size = 12) +
+  theme(
+    plot.title.position = "plot",
+    plot.title = element_text(face = "bold"),
+    panel.grid.minor = element_blank(),
+    legend.position = "bottom"
+  )
 ```
 
 ## Bar chart: compare category counts
 
-Use bars when the analytical question is “how many observations belong to each group?”
+Use bars when the question is how many observations belong to each group.
 
 ```{r}
+#| label: cylinder-bars
 #| fig-alt: "Bar chart showing the number of cars with four, six, and eight cylinders."
-plot_cylinder_counts(cars, "en")
+ggplot(cars, aes(x = cylinders, fill = cylinders)) +
+  geom_bar(show.legend = FALSE) +
+  scale_fill_viridis_d(end = 0.85) +
+  labs(
+    title = "Cars by cylinder count",
+    x = "Cylinders",
+    y = "Cars"
+  ) +
+  chart_theme
 ```
 
 ## Histogram: inspect a continuous distribution
 
-A histogram groups a numeric variable into intervals. Bin width is an analytical choice, not a decorative setting.
+The bin width controls the level of detail and should be chosen explicitly.
 
 ```{r}
+#| label: horsepower-histogram
 #| fig-alt: "Histogram of horsepower values in the mtcars dataset."
-plot_horsepower_distribution(cars, "en")
+ggplot(cars, aes(x = hp)) +
+  geom_histogram(
+    binwidth = 25,
+    boundary = 0,
+    fill = "#2A9D8F",
+    color = "white"
+  ) +
+  labs(
+    title = "Horsepower distribution",
+    x = "Horsepower",
+    y = "Cars"
+  ) +
+  chart_theme
 ```
 
 ## Scatter plot: examine two numeric variables
 
-The fitted line summarizes the negative association between weight and fuel efficiency. It does not establish causality.
+Color and shape provide redundant category encodings. The fitted line summarizes association, not causality.
 
 ```{r}
+#| label: efficiency-scatter
 #| fig-alt: "Scatter plot of vehicle weight and fuel efficiency, colored by cylinder count and shaped by transmission."
-plot_efficiency_weight(cars, "en")
+ggplot(
+  cars,
+  aes(
+    x = wt,
+    y = mpg,
+    color = cylinders,
+    shape = transmission
+  )
+) +
+  geom_point(size = 3, alpha = 0.85) +
+  geom_smooth(
+    aes(group = 1),
+    method = "lm",
+    se = TRUE,
+    color = "#333333"
+  ) +
+  scale_color_viridis_d(end = 0.85) +
+  labs(
+    title = "Fuel efficiency falls as vehicle weight rises",
+    subtitle = "Point shape identifies transmission type",
+    x = "Weight (1,000 lb)",
+    y = "Fuel efficiency (mpg)",
+    color = "Cylinders",
+    shape = "Transmission"
+  ) +
+  chart_theme
 ```
 
 ## Box plot: compare distributions across groups
 
-Box plots summarize medians, quartiles, and potential outliers. Jittered observations keep the small sample visible.
+The box plot summarizes each distribution while jittered points preserve the small sample.
 
 ```{r}
+#| label: efficiency-boxplot
 #| fig-alt: "Box plots comparing fuel efficiency for automatic and manual transmissions."
-plot_efficiency_boxplot(cars, "en")
+ggplot(cars, aes(x = transmission, y = mpg, fill = transmission)) +
+  geom_boxplot(width = 0.6, show.legend = FALSE) +
+  geom_jitter(width = 0.08, alpha = 0.65) +
+  scale_fill_viridis_d(end = 0.85) +
+  labs(
+    title = "Fuel efficiency by transmission",
+    x = "Transmission",
+    y = "Fuel efficiency (mpg)"
+  ) +
+  chart_theme
 ```
-
-## Design principles
-
-1. Match the chart to the data types and question.
-2. Encode categories as factors before plotting.
-3. Use colorblind-friendly scales and redundant encodings when useful.
-4. Write titles that state the takeaway.
-5. Include units, readable legends, and alternative text.
 
 ## Conclusion
 
-Clear graphics come from explicit analytical choices. The same reusable functions generate the [Spanish version](es/index.qmd), ensuring both pages communicate identical results.
-
+The visible workflow demonstrates data-type decisions, accessible scales, layered chart construction, annotations, and interpretation. See the [Spanish version](es/index.qmd).

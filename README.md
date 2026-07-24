@@ -1,8 +1,8 @@
 # ggplot2 Visualization Foundations / Fundamentos de visualización con ggplot2
 
-A bilingual Quarto tutorial that rebuilds and improves the original RPubs project with explicit `ggplot2` grammar, accessible colors, semantic data types, reusable functions, tests, and reproducible deployment.
+A bilingual Quarto tutorial that rebuilds and improves the original RPubs project with visible notebook code, explicit `ggplot2` grammar, accessible colors, semantic data types, tests, and reproducible deployment.
 
-Tutorial bilingüe en Quarto que reconstruye y mejora el proyecto original de RPubs mediante gramática explícita de `ggplot2`, colores accesibles, tipos de datos semánticos, funciones reutilizables y pruebas.
+Tutorial bilingüe en Quarto que reconstruye y mejora el proyecto original de RPubs mediante código visible, gramática explícita de `ggplot2`, colores accesibles, tipos de datos semánticos y pruebas.
 
 ## Reproduce / Reproducir
 
@@ -25,4 +25,3 @@ quarto render
 ## License
 
 Code is released under the MIT License.
-
