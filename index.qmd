@@ -158,4 +158,9 @@ ggplot(cars, aes(x = transmission, y = mpg, fill = transmission)) +
 
 ## Conclusion
 
-The visible workflow demonstrates data-type decisions, accessible scales, layered chart construction, annotations, and interpretation. See the [Spanish version](es/index.qmd).
+- The sample is structurally imbalanced: `r sum(cars$cylinders == "8")` of `r nrow(cars)` vehicles have eight cylinders, compared with `r sum(cars$cylinders == "6")` six-cylinder vehicles. This explains why count comparisons should precede distributional comparisons.
+- Vehicle weight and fuel efficiency have a Pearson correlation of `r round(cor(cars$wt, cars$mpg), 3)`, indicating a strong negative linear association in this sample.
+- Manual-transmission vehicles average `r round(mean(cars$mpg[cars$am == 1]), 1)` mpg versus `r round(mean(cars$mpg[cars$am == 0]), 1)` mpg for automatics, a difference of `r round(mean(cars$mpg[cars$am == 1]) - mean(cars$mpg[cars$am == 0]), 1)` mpg. This is descriptive rather than causal because transmission is confounded with weight, cylinders, and vehicle design.
+- The layered charts therefore support a consistent technical finding: heavier, higher-cylinder vehicles dominate the low-efficiency region, while transmission-level differences require multivariable analysis before causal interpretation.
+
+See the [Spanish version](es/index.qmd).

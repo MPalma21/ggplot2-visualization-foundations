@@ -158,4 +158,9 @@ ggplot(cars, aes(x = transmission, y = mpg, fill = transmission)) +
 
 ## Conclusión
 
-El flujo visible demuestra decisiones sobre tipos de datos, escalas accesibles, construcción por capas, anotaciones e interpretación. Consulta la [versión en inglés](../index.qmd).
+- La muestra está desbalanceada: `r sum(cars$cylinders == "8")` de `r nrow(cars)` vehículos tienen ocho cilindros, frente a `r sum(cars$cylinders == "6")` vehículos de seis cilindros. Por eso conviene comparar frecuencias antes de interpretar distribuciones.
+- El peso y la eficiencia presentan una correlación de Pearson de `r round(cor(cars$wt, cars$mpg), 3)`, lo que indica una asociación lineal negativa fuerte.
+- Los vehículos manuales promedian `r round(mean(cars$mpg[cars$am == 1]), 1)` mpg y los automáticos `r round(mean(cars$mpg[cars$am == 0]), 1)` mpg: una diferencia descriptiva de `r round(mean(cars$mpg[cars$am == 1]) - mean(cars$mpg[cars$am == 0]), 1)` mpg. No es una estimación causal porque transmisión, peso, cilindros y diseño están confundidos.
+- En conjunto, los gráficos muestran que los vehículos más pesados y con más cilindros se concentran en la zona de menor eficiencia; separar el efecto de la transmisión exigiría un modelo multivariable.
+
+Consulta la [versión en inglés](../index.qmd).
