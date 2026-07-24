@@ -22,6 +22,7 @@ format:
     toc: true
     code-fold: true
     code-tools: true
+    include-after-body: assets/code-tools-fix.html
     smooth-scroll: true
     fig-responsive: true
 
@@ -29,4 +30,3 @@ execute:
   freeze: auto
   warning: false
   message: false
-
