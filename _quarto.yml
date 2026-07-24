@@ -1,0 +1,32 @@
+project:
+  type: website
+  output-dir: _site
+
+website:
+  title: "ggplot2 Visualization Foundations"
+  navbar:
+    left:
+      - href: index.qmd
+        text: English
+      - href: es/index.qmd
+        text: Español
+    right:
+      - icon: github
+        href: https://github.com/MPalma21/ggplot2-visualization-foundations
+  page-footer:
+    center: "Miguelangel Palma Rojas · Reproducible with R and Quarto"
+
+format:
+  html:
+    theme: cosmo
+    toc: true
+    code-fold: true
+    code-tools: true
+    smooth-scroll: true
+    fig-responsive: true
+
+execute:
+  freeze: auto
+  warning: false
+  message: false
+

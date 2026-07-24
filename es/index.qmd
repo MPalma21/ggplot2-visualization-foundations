@@ -1,0 +1,77 @@
+---
+title: "Creación de visualizaciones efectivas con ggplot2"
+subtitle: "Una introducción moderna y accesible con mtcars"
+author: "Miguelangel Palma Rojas"
+date: last-modified
+lang: es
+---
+
+```{r}
+#| label: setup
+#| include: false
+source(here::here("R", "analysis.R"))
+cars <- prepare_mtcars()
+```
+
+## Objetivo
+
+Este notebook reconstruye el ejercicio original de RPubs como una guía breve de la gramática de gráficos. En lugar de depender de `qplot()`, cada visualización define explícitamente los datos, mapeos estéticos, geometrías, escalas y etiquetas.
+
+El conjunto incorporado `mtcars` contiene `r nrow(cars)` automóviles y `r ncol(cars)` variables preparadas. Como forma parte de R, el ejemplo es reproducible sin descargar datos externos.
+
+## Preparar las variables deliberadamente
+
+Los códigos numéricos de cilindros y transmisión representan categorías. Convertirlos en factores evita escalas continuas incorrectas y produce leyendas comprensibles.
+
+```{r}
+dplyr::glimpse(cars)
+```
+
+## Barras: comparar cantidades por categoría
+
+Las barras responden preguntas como “¿cuántas observaciones pertenecen a cada grupo?”.
+
+```{r}
+#| fig-alt: "Gráfico de barras con la cantidad de automóviles de cuatro, seis y ocho cilindros."
+plot_cylinder_counts(cars, "es")
+```
+
+## Histograma: examinar una distribución continua
+
+El histograma agrupa una variable numérica en intervalos. El ancho de cada intervalo es una decisión analítica.
+
+```{r}
+#| fig-alt: "Histograma de los caballos de fuerza del conjunto mtcars."
+plot_horsepower_distribution(cars, "es")
+```
+
+## Dispersión: examinar dos variables numéricas
+
+La línea ajustada resume la asociación negativa entre peso y eficiencia. No demuestra causalidad.
+
+```{r}
+#| fig-alt: "Dispersión entre peso y eficiencia, con color por cilindros y forma por transmisión."
+plot_efficiency_weight(cars, "es")
+```
+
+## Cajas: comparar distribuciones entre grupos
+
+Los diagramas de caja resumen mediana, cuartiles y posibles valores atípicos. Los puntos permiten ver la muestra completa.
+
+```{r}
+#| fig-alt: "Diagramas de caja de eficiencia para transmisiones automáticas y manuales."
+plot_efficiency_boxplot(cars, "es")
+```
+
+## Principios de diseño
+
+1. Elegir el gráfico según los tipos de datos y la pregunta.
+2. Convertir categorías en factores antes de visualizar.
+3. Usar escalas accesibles para daltonismo.
+4. Escribir títulos que comuniquen el hallazgo.
+5. Incluir unidades, leyendas legibles y texto alternativo.
+
+## Conclusión
+
+Los gráficos claros nacen de decisiones analíticas explícitas. Las mismas funciones reutilizables generan la [versión en inglés](../index.qmd), garantizando resultados idénticos.
+

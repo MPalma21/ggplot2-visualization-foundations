@@ -1,0 +1,77 @@
+---
+title: "Creating Effective Visualizations with ggplot2"
+subtitle: "A modern, accessible introduction using mtcars"
+author: "Miguelangel Palma Rojas"
+date: last-modified
+lang: en
+---
+
+```{r}
+#| label: setup
+#| include: false
+source(here::here("R", "analysis.R"))
+cars <- prepare_mtcars()
+```
+
+## Objective
+
+This notebook rebuilds the original RPubs exercise as a concise guide to the grammar of graphics. Instead of relying on `qplot()`, every chart explicitly defines data, aesthetic mappings, geometric marks, scales, and labels.
+
+The built-in `mtcars` dataset contains `r nrow(cars)` vehicles and `r ncol(cars)` analysis-ready variables after preparation. Because it ships with R, the example is fully reproducible without downloading external data.
+
+## Prepare variables deliberately
+
+Numeric codes such as cylinder count and transmission are categories in this context. Converting them to factors prevents continuous color scales and makes legends meaningful.
+
+```{r}
+dplyr::glimpse(cars)
+```
+
+## Bar chart: compare category counts
+
+Use bars when the analytical question is “how many observations belong to each group?”
+
+```{r}
+#| fig-alt: "Bar chart showing the number of cars with four, six, and eight cylinders."
+plot_cylinder_counts(cars, "en")
+```
+
+## Histogram: inspect a continuous distribution
+
+A histogram groups a numeric variable into intervals. Bin width is an analytical choice, not a decorative setting.
+
+```{r}
+#| fig-alt: "Histogram of horsepower values in the mtcars dataset."
+plot_horsepower_distribution(cars, "en")
+```
+
+## Scatter plot: examine two numeric variables
+
+The fitted line summarizes the negative association between weight and fuel efficiency. It does not establish causality.
+
+```{r}
+#| fig-alt: "Scatter plot of vehicle weight and fuel efficiency, colored by cylinder count and shaped by transmission."
+plot_efficiency_weight(cars, "en")
+```
+
+## Box plot: compare distributions across groups
+
+Box plots summarize medians, quartiles, and potential outliers. Jittered observations keep the small sample visible.
+
+```{r}
+#| fig-alt: "Box plots comparing fuel efficiency for automatic and manual transmissions."
+plot_efficiency_boxplot(cars, "en")
+```
+
+## Design principles
+
+1. Match the chart to the data types and question.
+2. Encode categories as factors before plotting.
+3. Use colorblind-friendly scales and redundant encodings when useful.
+4. Write titles that state the takeaway.
+5. Include units, readable legends, and alternative text.
+
+## Conclusion
+
+Clear graphics come from explicit analytical choices. The same reusable functions generate the [Spanish version](es/index.qmd), ensuring both pages communicate identical results.
+
